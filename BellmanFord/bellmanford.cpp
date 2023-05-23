@@ -2,57 +2,49 @@
 #include <queue>
 #include <vector>
 #include <fstream>
-
+#include <limits>
 using namespace std;
 
+struct Edge {
+    int source, destination, weight;
+};
 
-/* The input should have the vertices start at 1, example:
-6 8
-1 2 5
-1 3 4
-1 4 2
-1 6 6
-2 4 1
-2 5 7
-3 5 6
-4 6 1
-*/
+void bellmanFord(vector<Edge>& edges, int numVertices, int numEdges, int source, vector<int>& distances) {
 
-void Dijkstra(vector<vector<int>>& graph, int source, int dist[], int prev[], int numNodes) // Minimum path algorithm for always positive weighted graph
-{
-    dist[source] = 0;
-    //First int is the distance and the second one is the vertex.
-    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> minHeap;
+    distances[source] = 0;
 
-    minHeap.push(make_pair(0, source));
+    for (int i = 0; i < numVertices - 1; ++i) {
+        for (int j = 0; j < numEdges; ++j) {
+            int u = edges[j].source;
+            int v = edges[j].destination;
+            int weight = edges[j].weight;
+            //if(u == source)  cout << "distances[u] + weight < distances[v]: " << distances[u] << " + " << weight << " < " << distances[v] << endl;
 
-    while(!minHeap.empty())
-    {
-        int currentNode = minHeap.top().second;
-        minHeap.pop();
+            if (distances[u] != numeric_limits<int>::max() && distances[u] + weight < distances[v]) {
 
-        //Neighbors of the current node
-        for (int i = 0; i < numNodes; i++) {
+                distances[v] = distances[u] + weight;
 
-            if(graph[currentNode][i] != -1){
-
-                int neighbor = i;
-                int weight = graph[currentNode][i];
-
-                if (dist[currentNode] + weight < dist[neighbor]) {
-                    dist[neighbor] = dist[currentNode] + weight;
-                    minHeap.push(make_pair(dist[neighbor], neighbor));
-                    prev[neighbor] = currentNode + 1;
-                }
-
+             //   cout << "New distance of " << v << ": " << distances[v] << endl;
             }
-
+            if (distances[v] != std::numeric_limits<int>::max() &&
+                distances[v] + weight < distances[u]) {
+                distances[u] = distances[v] + weight;
+            }
         }
     }
-} 
 
+    for (const auto& edge : edges) {
+        int u = edge.source;
+        int v = edge.destination;
+        int weight = edge.weight;
 
-
+        if (distances[u] != numeric_limits<int>::max() &&
+            distances[u] + weight < distances[v]) {
+            cout << "Graph contains negative-weight cycle.\n";
+            return;
+        }
+    }
+}
 
 void printHelp() {
     cout << "-h\t\tShow help" << endl;
@@ -99,27 +91,24 @@ int main(int argc, char* argv[]) {
  
     inputFile >> numNodes >> numEdges;
 
-    vector<vector<int>> graph(numNodes, vector<int>(numNodes, -1));
+    vector<Edge> edges(numEdges);
 
     for (int i = 0; i < numEdges; ++i) {
         inputFile >> u >> v >> weight;
-        graph[u-1][v-1] = weight;
-        graph[v-1][u-1] = weight;
+        edges[i].source = u - 1;
+        edges[i].destination = v - 1;
+        edges[i].weight = weight;
     }
+
     inputFile.close();
+/*
+    for (int i = 0; i < numEdges; ++i) {
+        if (edges[i].source == 3) cout << "Testes :" << edges[i].source << " " << edges[i].destination << " " << edges[i].weight << endl;
+    }*/
+    
+    vector<int> distances(numNodes, numeric_limits<int>::max());
 
-
-    int prev[numNodes];
-    int dist[numNodes];
-
-    for(int i = 0; i < numNodes; i++)
-    {
-        prev[i] = -1;
-        dist[i] =  INT_MAX;
-    }
-
-    Dijkstra(graph, initialVertex - 1, dist, prev,  numNodes);
-
+    bellmanFord(edges, numNodes, numEdges, initialVertex - 1, distances);
 
     if(!outputFilename.empty())
     {
@@ -131,7 +120,7 @@ int main(int argc, char* argv[]) {
 
         for(int i = 0; i < numNodes; i++)
         {
-            cout << i + 1 << ":" << dist[i];
+            cout << i + 1 << ":" << distances[i];
             if(i < numNodes - 1)cout << " ";
         }
 
@@ -143,7 +132,7 @@ int main(int argc, char* argv[]) {
 
         for(int i = 0; i < numNodes; i++)
         {
-            cout << i + 1 << ":" << dist[i];
+            cout << i + 1 << ":" << distances[i];
             if(i < numNodes - 1)cout << " ";
         }
     }

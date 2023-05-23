@@ -116,7 +116,7 @@ int main(int argc, char* argv[]) {
 
     if(!outputFilename.empty())
     {
-        ofstream outputFile("output.txt");
+        ofstream outputFile(outputFilename);
 
         if (outputFile.is_open()) {
         streambuf* originalCoutBuffer = std::cout.rdbuf();  // Store the original cout buffer
