@@ -9,7 +9,7 @@ struct Edge {
     int source, destination, weight;
 };
 
-void bellmanFord(vector<Edge>& edges, int numVertices, int numEdges, int source, vector<int>& distances) {
+bool bellmanFord(vector<Edge>& edges, int numVertices, int numEdges, int source, vector<int>& distances, bool directedgraph) {
 
     distances[source] = 0;
 
@@ -18,16 +18,16 @@ void bellmanFord(vector<Edge>& edges, int numVertices, int numEdges, int source,
             int u = edges[j].source;
             int v = edges[j].destination;
             int weight = edges[j].weight;
-            //if(u == source)  cout << "distances[u] + weight < distances[v]: " << distances[u] << " + " << weight << " < " << distances[v] << endl;
 
             if (distances[u] != numeric_limits<int>::max() && distances[u] + weight < distances[v]) {
 
                 distances[v] = distances[u] + weight;
 
-             //   cout << "New distance of " << v << ": " << distances[v] << endl;
             }
+
+            // For undirected graphs only
             if (distances[v] != std::numeric_limits<int>::max() &&
-                distances[v] + weight < distances[u]) {
+                distances[v] + weight < distances[u] && !directedgraph) {
                 distances[u] = distances[v] + weight;
             }
         }
@@ -40,23 +40,25 @@ void bellmanFord(vector<Edge>& edges, int numVertices, int numEdges, int source,
 
         if (distances[u] != numeric_limits<int>::max() &&
             distances[u] + weight < distances[v]) {
-            cout << "Graph contains negative-weight cycle.\n";
-            return;
+            return false;
         }
     }
+    return true;
 }
 
 void printHelp() {
-    cout << "-h\t\tShow help" << endl;
-    cout << "-o <arquivo>\tRedirect output to 'arquivo'" << endl;
-    cout << "-f <arquivo>\tSpecify the input graph 'arquivo'" << endl;
-    cout << "-i\t\tSpecify the initial vertex" << endl;
+    cout << "-h\t\tMostra a ajuda" << endl;
+    cout << "-o <arquivo>\tEspecifica o 'arquivo' de output" << endl;
+    cout << "-f <arquivo>\tEspecifica o 'arquivo' de input" << endl;
+    cout << "-i\t\tInidica o vértice inicial" << endl;
+    cout << "-d\t\tIndica que o grafo é direcionado" << endl;
 }
 
 int main(int argc, char* argv[]) {
     string outputFilename;
     string inputFilename;
     int initialVertex = 1;
+    bool directedgraph = false;
 
     // Process command-line arguments
     for (int i = 1; i < argc; ++i) {
@@ -69,7 +71,7 @@ int main(int argc, char* argv[]) {
                 outputFilename = argv[i + 1];
                 ++i;
             } else {
-                cerr << "Error: Missing argument for '-o'" << endl;
+                cerr << "Erro: Faltando o argumento para '-o'" << endl;
                 return 1;
             }
         } else if (arg == "-f") {
@@ -77,11 +79,13 @@ int main(int argc, char* argv[]) {
                 inputFilename = argv[i + 1];
                 ++i;
             } else {
-                cerr << "Error: Missing argument for '-f'" << endl;
+                cerr << "Erro: Faltando o argumento para '-f'" << endl;
                 return 1;
             }
         } else if (arg == "-i") {
             initialVertex = stoi(argv[i + 1]);
+        } else if (arg == "-d") {
+            directedgraph = true;
         }
     }
 
@@ -101,39 +105,52 @@ int main(int argc, char* argv[]) {
     }
 
     inputFile.close();
-/*
-    for (int i = 0; i < numEdges; ++i) {
-        if (edges[i].source == 3) cout << "Testes :" << edges[i].source << " " << edges[i].destination << " " << edges[i].weight << endl;
-    }*/
     
     vector<int> distances(numNodes, numeric_limits<int>::max());
 
-    bellmanFord(edges, numNodes, numEdges, initialVertex - 1, distances);
+    bool SemCicloNeg = bellmanFord(edges, numNodes, numEdges, initialVertex - 1, distances, directedgraph);
+    string result;
 
     if(!outputFilename.empty())
     {
         ofstream outputFile(outputFilename);
         if (outputFile.is_open()) {
-        streambuf* originalCoutBuffer = std::cout.rdbuf();  // Store the original cout buffer
+        streambuf* originalCoutBuffer = std::cout.rdbuf();  
         cout.rdbuf(outputFile.rdbuf());  
 
-
-        for(int i = 0; i < numNodes; i++)
+        if(SemCicloNeg)
         {
-            cout << i + 1 << ":" << distances[i];
-            if(i < numNodes - 1)cout << " ";
+            for(int i = 0; i < numNodes; i++)
+            {
+                if(distances[i] == numeric_limits<int>::max()) result = "Unreachable";
+                else result = to_string(distances[i]);
+                cout << i + 1 << ":" << result;
+                if(i < numNodes - 1)cout << " ";
+            }
+        }
+        else
+        {
+            cout << "O grafo contem um ciclo negativo" << endl;
         }
 
-        std::cout.rdbuf(originalCoutBuffer);  // Restore the original cout buffer
+        std::cout.rdbuf(originalCoutBuffer);
         outputFile.close();
         }
     }    
     else {
-
-        for(int i = 0; i < numNodes; i++)
+        if(SemCicloNeg)
         {
-            cout << i + 1 << ":" << distances[i];
-            if(i < numNodes - 1)cout << " ";
+            for(int i = 0; i < numNodes; i++)
+            {
+                if(distances[i] == numeric_limits<int>::max()) result = "Unreachable";
+                else result = to_string(distances[i]);
+                cout << i + 1 << ":" << result;
+                if(i < numNodes - 1)cout << " ";
+            }
+        }
+        else
+        {
+            cout << "O grafo contem um ciclo negativo" << endl;
         }
     }
 

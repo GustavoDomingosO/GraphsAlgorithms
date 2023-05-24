@@ -2,12 +2,13 @@
 #include <queue>
 #include <vector>
 #include <fstream>
+#include <algorithm>
 
 using namespace std;
 
-//Prim - Minimum spanning tree
 
-void Prim(vector<vector<int>>& graph, int source, int prev[], int cost[], int numNodes)
+
+void Prim(vector<vector<int>>& graph, int source, vector<int> &prev, vector<int> &cost, int numNodes, vector<pair<int, int>>& mstEdges)
 {
     cost[source] = 0;
     //First element is the weight and the second is the vector
@@ -30,9 +31,13 @@ void Prim(vector<vector<int>>& graph, int source, int prev[], int cost[], int nu
                 int weight = graph[currentNode][i];
 
                 if (!visited[neighbor] && weight < cost[neighbor]) {
+
                     cost[neighbor] = weight;
                     prev[neighbor] = currentNode;
-                    minHeap.push(make_pair(cost[neighbor], neighbor));  
+                    
+                    minHeap.push(make_pair(cost[neighbor], neighbor));
+
+                    mstEdges.push_back(make_pair(currentNode, neighbor));
                 }
             }
         }
@@ -40,11 +45,11 @@ void Prim(vector<vector<int>>& graph, int source, int prev[], int cost[], int nu
 }
 
 void printHelp() {
-    cout << "-h\t\tShow help" << endl;
-    cout << "-o <arquivo>\tRedirect output to 'arquivo'" << endl;
-    cout << "-f <arquivo>\tSpecify the input graph 'arquivo'" << endl;
-    cout << "-i\t\tSpecify the initial vertex" << endl;
-    cout << "-s\t\tShow solution" << endl;
+    cout << "-h\t\tMostra a ajuda" << endl;
+    cout << "-o <arquivo>\tEspecifica o 'arquivo' de output" << endl;
+    cout << "-f <arquivo>\tEspecifica o 'arquivo' de input" << endl;
+    cout << "-i\t\tInidica o vértice inicial" << endl;
+    cout << "-s\t\tMostra a solução" << endl;
 }
 
 int main(int argc, char* argv[]) {
@@ -63,7 +68,7 @@ int main(int argc, char* argv[]) {
                 outputFilename = argv[i + 1];
                 ++i;
             } else {
-                cerr << "Error: Missing argument for '-o'" << endl;
+                cerr << "Erro: Faltando o argumento para '-o'" << endl;
                 return 1;
             }
         } else if (arg == "-f") {
@@ -71,7 +76,7 @@ int main(int argc, char* argv[]) {
                 inputFilename = argv[i + 1];
                 ++i;
             } else {
-                cerr << "Error: Missing argument for '-f'" << endl;
+                cerr << "Erro: Faltando o argumento para '-f'" << endl;
                 return 1;
             }
         } else if (arg == "-i") {
@@ -84,9 +89,14 @@ int main(int argc, char* argv[]) {
     int numNodes, numEdges, u, v, cost;
 
     ifstream inputFile(inputFilename);
- 
-    inputFile >> numNodes >> numEdges;
 
+     if (!inputFile.is_open()) {
+    cerr << "Erro: Falha ao abrir o arquivo de input" << endl;
+    return 1;
+    }
+    //ifstream inputFile(inputFilename);
+
+    inputFile >> numNodes >> numEdges;
 
     vector<vector<int>> graph(numNodes, vector<int>(numNodes, -1));
 
@@ -97,22 +107,22 @@ int main(int argc, char* argv[]) {
     }
     inputFile.close();
 
-    int prev[numNodes];
-    int cost_array[numNodes];
+    vector<int> prev(numNodes, -1);
+    vector<int> cost_array(numNodes, INT_MAX);
 
-    for(int i = 0; i < numNodes; i++)
-    {
-        prev[i] = -1;
-        cost_array[i] =  INT_MAX;
-    }
+    vector<pair<int, int>> mstEdges;
 
-    Prim(graph, initialVertex - 1, prev, cost_array, numNodes);
+    Prim(graph, initialVertex - 1, prev, cost_array, numNodes, mstEdges);
 
     int finalcost = 0;
 
     for (int i = 0; i < numNodes; i++) {
       finalcost += cost_array[i];
     }
+    
+    sort(mstEdges.begin(), mstEdges.end(), [](const pair<int, int>& a, const pair<int, int>& b) {
+    return a.first < b.first;
+    });
 
     if(!outputFilename.empty())
     {
@@ -125,7 +135,8 @@ int main(int argc, char* argv[]) {
         if (solution) 
         {
             for (int i = 0; i < numNodes; i++) {
-                cout << "(" << i + 1 << "," << prev[i] + 1 << ")";
+                if(prev[i] == -1) continue;
+                cout << "(" << prev[i] + 1 << "," << i + 1  << ")";
                 
                 if (i != numNodes - 1) {
                     cout << " ";
@@ -143,7 +154,7 @@ int main(int argc, char* argv[]) {
         {
             for (int i = 0; i < numNodes; i++) {
                 if(prev[i] == -1) continue;
-                cout << "(" << i + 1 << "," << prev[i] + 1 << ")";
+                cout << "(" << prev[i] + 1 << "," << i + 1 << ")";
                 
                 if (i != numNodes - 1) {
                     cout << " ";

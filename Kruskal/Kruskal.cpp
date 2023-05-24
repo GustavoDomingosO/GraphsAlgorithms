@@ -13,11 +13,10 @@ struct UnionFind
 {
     vector<int> parent, rank;
 
-    UnionFind(int n) { //n = num of vertices
+    UnionFind(int n) { 
         parent.resize(n);
         rank.resize(n, 0);
         
-        // Initialize each node as a separate set with itself as the parent
         for (int i = 0; i < n; ++i) parent[i] = i;
     }
 
@@ -74,11 +73,11 @@ vector<Edge> Kruskal(vector<Edge>& edges, int numNodes, int initialVertex)
 
 
 void printHelp() {
-    cout << "-h\t\tShow help" << endl;
-    cout << "-o <arquivo>\tRedirect output to 'arquivo'" << endl;
-    cout << "-f <arquivo>\tSpecify the input graph 'arquivo'" << endl;
-    cout << "-i\t\tSpecify the initial vertex" << endl;
-    cout << "-s\t\tShow solution" << endl;
+    cout << "-h\t\tMostra a ajuda" << endl;
+    cout << "-o <arquivo>\tEspecifica o 'arquivo' de output" << endl;
+    cout << "-f <arquivo>\tEspecifica o 'arquivo' de input" << endl;
+    cout << "-i\t\tInidica o vértice inicial" << endl;
+    cout << "-s\t\tMostra a solução" << endl;
 }
 
 int main(int argc, char* argv[]) {
@@ -97,7 +96,7 @@ int main(int argc, char* argv[]) {
                 outputFilename = argv[i + 1];
                 ++i;
             } else {
-                cerr << "Error: Missing argument for '-o'" << endl;
+                cerr << "Erro: Faltando o argumento para '-o'" << endl;
                 return 1;
             }
         } else if (arg == "-f") {
@@ -105,7 +104,7 @@ int main(int argc, char* argv[]) {
                 inputFilename = argv[i + 1];
                 ++i;
             } else {
-                cerr << "Error: Missing argument for '-f'" << endl;
+                cerr << "Erro: Faltando o argumento para '-f'" << endl;
                 return 1;
             }
         } else if (arg == "-i") {
@@ -131,6 +130,11 @@ int main(int argc, char* argv[]) {
 
     vector<Edge> mst = Kruskal(edges, numNodes, initialVertex - 1);
 
+
+    sort(mst.begin(), mst.end(), [](const Edge& edge1, const Edge& edge2) {
+        return edge1.src < edge2.src;
+    });     
+
     int finalcost = 0;
 
     for (const auto& edge : mst) {
@@ -142,7 +146,7 @@ int main(int argc, char* argv[]) {
     {
         ofstream outputFile(outputFilename);
         if (outputFile.is_open()) {
-        streambuf* originalCoutBuffer = std::cout.rdbuf();  // Store the original cout buffer
+        streambuf* originalCoutBuffer = std::cout.rdbuf();
         cout.rdbuf(outputFile.rdbuf());  
 
         if (solution) 
@@ -151,7 +155,6 @@ int main(int argc, char* argv[]) {
                 const auto& edge = mst[i];
                 cout << "(" << edge.src + 1 << "," << edge.dest + 1 << ")";
                 
-                // Print a space if it's not the last element
                 if (i != mst.size() - 1) {
                     cout << " ";
                 }
@@ -159,8 +162,7 @@ int main(int argc, char* argv[]) {
         }
         else cout << finalcost << endl;
 
-
-        std::cout.rdbuf(originalCoutBuffer);  // Restore the original cout buffer
+        std::cout.rdbuf(originalCoutBuffer);
         outputFile.close();
         }
     }    

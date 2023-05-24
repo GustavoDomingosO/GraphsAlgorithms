@@ -2,26 +2,14 @@
 #include <queue>
 #include <vector>
 #include <fstream>
+#include <limits>
 
 using namespace std;
 
-
-/* The input should have the vertices start at 1, example:
-6 8
-1 2 5
-1 3 4
-1 4 2
-1 6 6
-2 4 1
-2 5 7
-3 5 6
-4 6 1
-*/
-
-void Dijkstra(vector<vector<int>>& graph, int source, int dist[], int prev[], int numNodes) // Minimum path algorithm for always positive weighted graph
+void Dijkstra(vector<vector<int>>& graph, int source, int dist[], int prev[], int numNodes) 
 {
     dist[source] = 0;
-    //First int is the distance and the second one is the vertex.
+
     priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> minHeap;
 
     minHeap.push(make_pair(0, source));
@@ -31,7 +19,6 @@ void Dijkstra(vector<vector<int>>& graph, int source, int dist[], int prev[], in
         int currentNode = minHeap.top().second;
         minHeap.pop();
 
-        //Neighbors of the current node
         for (int i = 0; i < numNodes; i++) {
 
             if(graph[currentNode][i] != -1){
@@ -55,10 +42,10 @@ void Dijkstra(vector<vector<int>>& graph, int source, int dist[], int prev[], in
 
 
 void printHelp() {
-    cout << "-h\t\tShow help" << endl;
-    cout << "-o <arquivo>\tRedirect output to 'arquivo'" << endl;
-    cout << "-f <arquivo>\tSpecify the input graph 'arquivo'" << endl;
-    cout << "-i\t\tSpecify the initial vertex" << endl;
+    cout << "-h\t\tMostra a ajuda" << endl;
+    cout << "-o <arquivo>\tEspecifica o 'arquivo' de output" << endl;
+    cout << "-f <arquivo>\tEspecifica o 'arquivo' de input" << endl;
+    cout << "-i\t\tInidica o vértice inicial" << endl;
 }
 
 int main(int argc, char* argv[]) {
@@ -77,7 +64,7 @@ int main(int argc, char* argv[]) {
                 outputFilename = argv[i + 1];
                 ++i;
             } else {
-                cerr << "Error: Missing argument for '-o'" << endl;
+                cerr << "Erro: Faltando o argumento para '-o'" << endl;
                 return 1;
             }
         } else if (arg == "-f") {
@@ -85,7 +72,7 @@ int main(int argc, char* argv[]) {
                 inputFilename = argv[i + 1];
                 ++i;
             } else {
-                cerr << "Error: Missing argument for '-f'" << endl;
+                cerr << "Erro: Faltando o argumento para '-f'" << endl;
                 return 1;
             }
         } else if (arg == "-i") {
@@ -115,11 +102,12 @@ int main(int argc, char* argv[]) {
     for(int i = 0; i < numNodes; i++)
     {
         prev[i] = -1;
-        dist[i] =  INT_MAX;
+        dist[i] =  numeric_limits<int>::max();
     }
 
     Dijkstra(graph, initialVertex - 1, dist, prev,  numNodes);
 
+    string result;
 
     if(!outputFilename.empty())
     {
@@ -131,7 +119,9 @@ int main(int argc, char* argv[]) {
 
         for(int i = 0; i < numNodes; i++)
         {
-            cout << i + 1 << ":" << dist[i];
+            if(dist[i] == numeric_limits<int>::max()) result = "-1";
+            else result = to_string(dist[i]);
+            cout << i + 1 << ":" << result;
             if(i < numNodes - 1)cout << " ";
         }
 
@@ -143,7 +133,9 @@ int main(int argc, char* argv[]) {
 
         for(int i = 0; i < numNodes; i++)
         {
-            cout << i + 1 << ":" << dist[i];
+            if(dist[i] == numeric_limits<int>::max()) result = "-1";
+            else result = to_string(dist[i]);
+            cout << i + 1 << ":" << result;
             if(i < numNodes - 1)cout << " ";
         }
     }
