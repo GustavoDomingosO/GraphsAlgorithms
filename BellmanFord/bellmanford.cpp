@@ -126,6 +126,7 @@ int main(int argc, char* argv[]) {
                 else result = to_string(distances[i]);
                 cout << i + 1 << ":" << result;
                 if(i < numNodes - 1)cout << " ";
+                else cout << endl;
             }
         }
         else
@@ -146,6 +147,7 @@ int main(int argc, char* argv[]) {
                 else result = to_string(distances[i]);
                 cout << i + 1 << ":" << result;
                 if(i < numNodes - 1)cout << " ";
+                else cout << endl;
             }
         }
         else
