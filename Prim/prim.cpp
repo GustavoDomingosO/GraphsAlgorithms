@@ -49,7 +49,7 @@ void printHelp() {
     cout << "-h\t\tMostra a ajuda" << endl;
     cout << "-o <arquivo>\tEspecifica o 'arquivo' de output" << endl;
     cout << "-f <arquivo>\tEspecifica o 'arquivo' de input" << endl;
-    cout << "-i\t\tInidica o vértice inicial" << endl;
+    cout << "-i\t\tIndica o vértice inicial" << endl;
     cout << "-s\t\tMostra a solução" << endl;
 }
 
